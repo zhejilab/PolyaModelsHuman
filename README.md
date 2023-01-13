@@ -51,7 +51,7 @@ A putative polyA site with this sequence is expected to occur with a classificat
 
 ### Example prediction from genomic location
 
-We can make a prediction 
+**Note:** Predictions can be made from genomic locations but the genome FASTA and chrom.sizes files will need to be provided by the user.
 
 ```sh
 python PolyaID_PolyaStrength_prediction.py from_position -p 'chr1:932116:+'  -g ./genome.fa -c ./chrom.sizes
