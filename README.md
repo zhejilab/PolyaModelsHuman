@@ -51,7 +51,7 @@ A putative polyA site with this sequence is expected to occur with a classificat
 
 ### Example prediction from genomic location
 
-We can make a prediction 
+**Note:** Predictions can be made from genomic locations but the genome FASTA and chrom.sizes files will need to be provided by the user.
 
 ```sh
 python PolyaID_PolyaStrength_prediction.py from_position -p 'chr1:932116:+'  -g ./genome.fa -c ./chrom.sizes
@@ -70,7 +70,7 @@ At chromosome 1, position 932,116 on the forward strand, a putative polyA site a
 
 ## Putative PolyA Sites in hg38
 
-We made predictions across hg38 in gene-associated regions and created a compendium of putative polyA sites. 
+We made predictions across hg38 in gene-associated regions and created a compendium of putative polyA sites. These tracks are included when the repository is cloned locally but not when the zipped repository is downloaded. In that case, the tracks will need to be downloaded manually from the GitHub browser using the "Download" button. 
 
 **putative_sites/putative_polya_sites.+.bb**
 > Contains the putative polyA sites located on the forward strand in bigBed format. The sites are annotated with the PolyaID classification probability, PolyaStrength score, and gene and feature information.
