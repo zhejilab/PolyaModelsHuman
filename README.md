@@ -1,6 +1,6 @@
 # PolyaModels
 
-This repository contains the necessary scripts to make predictions using **PolyaID** and **PolyaStrength**, convolutional neural network models that predict the classification and cleavage profile surrounding a putative polyA site and its strength, respectively. We developed PolyaID and PolyaStrength to identify putative polyA sites across the genome at nucleotide-resolution and then quantify the cis-regulatory and genomic context factors governing site usage.
+This repository contains the necessary scripts to make predictions using **PolyaID** and **PolyaStrength**, convolutional neural network models that predict the classification and cleavage profile surrounding a putative polyA site and its strength, respectively. We developed PolyaID and PolyaStrength to identify putative polyA sites across the genome at nucleotide-resolution and then quantify the cis-regulatory and genomic context factors governing site usage. Because of the large size of the PolyaID and PolyaStrength models, we recommend downloading them as a ZIP file, as they will not be properly downloaded during repo cloning.
 
 Contact *zhe.ji (at) northwestern.edu* with any questions.
 
@@ -16,6 +16,20 @@ Contact *zhe.ji (at) northwestern.edu* with any questions.
 - Pandas == 1.1.5
 - pyfaidx == 0.5.9
 - Isolearn
+
+If you encounter issues running the models with these package specifications (see Issues #2 and #3), then please try installing the following package versions using Mamba and then Pip:
+
+- python=3.6
+- tensorflow=2.0.0
+- keras=2.3.1
+- h5py=2.10.0
+- numpy=1.19.1
+- pandas=1.1.5
+- pyfaidx=0.7.2.1
+- isolearn=0.2.1
+
+Versions of `numpy`, `pandas`, and `pyfaidx` are optimally selected by `mamba`. `isolearn` was installed with pip, and the rest with `conda`.
+We would like to thank mauliknshah for bringing this to our attention and providing a solution [here](https://github.com/zhejilab/PolyaModelsHuman/issues/4#issue-2236125910).
 
 ### Usage
 
