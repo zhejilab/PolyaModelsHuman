@@ -9,31 +9,47 @@ Contact *zhe.ji (at) northwestern.edu* with any questions.
 
 ### Running PolyaModels requires the following packages be installed
 
-- Python == 3.6
-- Tensorflow == 2.1.0
-- Keras == 2.3.1
-- NumPy == 1.19.1
-- Pandas == 1.1.5
-- pyfaidx == 0.5.9
-- Isolearn
+- Python == 3.9.6
+- Tensorflow == 2.19.0
+- Keras == 3.10.0
+- NumPy == 2.0.2
+- Pandas == 2.2.3
+- pyfaidx == 0.8.1.4
+- Isolearn == 0.2.1
+- Matplotlib == 3.9.4
+- Ipykernel == 6.29.5
 
-If you encounter issues running the models with these package specifications (see Issues #2 and #3), then please try installing the following package versions using Mamba and then Pip:
+Warning: We are still validating that these are the only required packages. 
 
-- python=3.6
-- tensorflow=2.0.0
-- keras=2.3.1
-- h5py=2.10.0
-- numpy=1.19.1
-- pandas=1.1.5
-- pyfaidx=0.7.2.1
-- isolearn=0.2.1
+All versions were optimsally selected by pip.
 
-Versions of `numpy`, `pandas`, and `pyfaidx` are optimally selected by `mamba`. `isolearn` was installed with pip, and the rest with `conda`.
-We would like to thank mauliknshah for bringing this to our attention and providing a solution [here](https://github.com/zhejilab/PolyaModelsHuman/issues/4#issue-2236125910).
+### Usage directions for current pipeline - jupyter notebook
+PolyaID and PolyaStrength can be used to make new predictions from new sequences, or a file containing genomic regions of interest. Due to biological relevancy and model interpertability, we do not support analysis of sequences shorter than 60 nucleotides.
 
-### Usage
+#### Important Notice
+Do to file sizes, 3' Reads and genome FASTA files could not be added to this repo. If you wish to use these files for predictions please name them as they appear in the jupyter notebook workflow in the cell under the header 'Data'. The missing files are:
+'resources/hg38.genome.fa' - genome fasta file
+'resources/hg38.fa.fai' - genome fasta index
+'resources/hg38.chrom.sizes' - chromosome sizes file
+'resources/reads3_scoring_dictionary.pickle' - sequencing reads pickle file
 
-PolyaID and PolyaStrength can be used to make new predictions from a genomic location, new sequences, or a file containing either of these inputs. When making individual predictions, genomic locations must be given as a string with the format "chrom:position:strand" and requires that reference genome FASTA and chromosome sizes files be provided. In file format, the genomic locations should be provided as BED6 intervals.
+
+**polyA_prediction_pipeline.ipynb**
+This file is a jupyter notebook containing cells that allow you to obtain PolyaID and PolyaStrength predictions for genetic sequences and genomic regions of interest. Within the same jupyter notebook, you can visualize these predictions. Here are the steps to run this analysis:
+> Important: Assure all paths are correctly set and the jupyter notebook is in the root directory of this repository.
+> Run all helper functions in cells following the header 'Helper Function'.
+> Import data by running cells after header 'Data'.
+> If you have a sequence: begin running analysis at cell titled 'Input is a sequence'. Change variable named 'seq' under the header 'Initialize your sequence' to your sequence of interest. N.B. ensure you still execute all helper functions at the beginning of notebook. 
+> If you have a .txt file with genomic regions of interest: begin running analysis at cell titled 'Input is txt file'. N.B. All fields in the .txt must be labeled exactly the same as the fields in 'regions.txt'. In fact, the file must also be named 'regions.txt'. We recommend simply editing this .txt file directly.
+
+**regions.txt**
+Text file that works as an input for predicting polya sites along genomic regions of interest given genomic coordinates. An example entry is provided for you. Do not rename the file or rename any columns, the analysis will fail.
+
+**sliding_windows.txt**
+File generated if input is a sequence. The sequence is padded and broken up into consecutive windows of 240 nucleotides.
+
+
+### Usage directions for old Polya Analsyis V1 - Included in Polya.1.0 folder
 
 **predictor_tool/PolyaID_PolyaStrength_prediction.py**
 > This file contains the predictor tool to make new predictions using PolyaID and PolyaStrength. It is designed to be used as a command-line tool, which users can invoke as shown in the examples below.

@@ -1,0 +1,29 @@
+############# MAKING PREDICTIONS FOR POLYAID CONSOLIDATION EXAMPLE #############
+
+Project directory: "/directory/for/this/project"
+
+## Initialize a mamba environment, according to the github page
+mamba create -n nameofenv python=3.6 numpy=1.19.1 pandas=1.1.5 pyfaidx=0.7.2.1
+mamba activate nameofenv
+conda install keras=2.3.1 tensorflow=2.0.0 h5py=2.10.0 ipykernel=5.3.4 tqdm=4.62.3 dill=0.3.4 tensorflow-estimator=2.0.0
+pip install isolearn==0.2.1
+
+##Initialize jupyter kernel
+python -m ipykernel install --user --name=nameofenv
+
+## Prepare gene region in Jupyter Notebook. Model Predictions will be made across the entire gene region. The Androgen Receptor Gene is used for an example here.
+#Ensure that ipykernel=5.3.4 is installed in your environment so you can open the jupyter notebook.
+EXAMPLE_GENE: AR
+#enter notebook predictions-setup.ipynb
+
+## Make predictions covering gene region prepared in Jupyter notebook
+
+cd /directory/for/this/project/code
+sh example.prediction.sh
+
+## Run the following command in line after predictions are completed to combined PolyaID and PolyaStrength predictions
+paste /directory/for/this/project/results/example_ar.predictions_polyaid.txt /directory/for/this/project/results/example_ar.predictions_polyastrength.txt | cut -f 1-9,15-16 > /directory/for/this/project/results/example_ar.comprehensive_predictions.txt
+
+## Predictions from both models will be stored in this file:
+directory/for/this/project/results/example_ar.comprehensive_predictions.txt
+
