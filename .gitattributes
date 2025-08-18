@@ -2,3 +2,4 @@
 *.bb filter=lfs diff=lfs merge=lfs -text
 predictor_tool/PolyaID_training_data.txt filter=lfs diff=lfs merge=lfs -text
 predictor_tool/PolyaStrength_training_data.txt filter=lfs diff=lfs merge=lfs -text
+*.pickle filter=lfs diff=lfs merge=lfs -text
