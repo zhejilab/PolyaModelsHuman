@@ -23,6 +23,61 @@ Warning: We are still validating that these are the only required packages.
 
 All versions were optimally selected by pip.
 
+**`pipeline.py`** runs PolyaID & PolyaStrength on sliding windows around a **user-provided sequence** and saves results. It generates per-window PolyaID, cleavage vectors, PolyaStrength and a summary plot.
+
+## Usage
+
+```bash
+python pipeline.py
+```
+
+When prompted:
+
+```
+Enter your sequence:
+```
+
+**Put in the the sequence directly** (no quotes) and press Enter.       
+**Example sequence**: 
+```
+AGAGCCGTGAAGGCCCAGGGGACCTGCGTGTCTTGGCTCCACGCCAGATGTGTTATTATTTATGTCTCTGAGAATGTCTGGATCTCAGAGCCGAATTACAATAAAAACATCTTTAAACTTATTTCTACCTCATTTTGGGGTTGCCAGCTCACCTGATCATTTTTATGAACTGTCATGAACACTGATGACATTTTATGAGCCTTTTACATGGGACACTACAGAATACATTTGTCAGCGAGG
+```
+**Allowed characters:** `A C G T` only. Any other character will raise an error.
+
+## Outputs
+
+- **`results/cleavage_profile_explanation.pdf`**
+``` 
+Comprehensive predictions plot to identify individual Polya sites
+
+Axis1: PolyaID classification – Shows predicted polyadenylation probability per position (red = likely site, blue = unlikely).
+Axis2: Positive cleavage vectors – Distribution of cleavage site predictions across the sequence.
+Axis3: Normalized cleavage profile – Cleavage probability at each nucleotide across all scanning model predictions.
+Axis4: Representative cleavage site – Marks the most likely positions where cleavage actually occurs.
+```
+- **`sliding_windows.txt`** – 240-nt windows generated from your input (with padding by the script).  
+- **`sliding_windows_with_scores_and_index.txt`** – Each window plus:  
+    - `PolyaID`
+    - `cleavage_vector`
+    - `PolyaStrength`
+    - `Index`       
+- Text file entry for first nucleotide in example sequence:      
+```
+sequence:NNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNAGAGCCGTGAAGGCCCAGGGGACCTGCGTGTCTTGGCTCCACGCCAGATGTGTTATTATTTATGTCTCTGAGAATGTCTGGATCTCAGAGCCGAATTACAATAAAAACATCTTTAAACTT       
+PolyaID: 0.5684121251106262     
+cleavage_vector: 0.008032,0.022785,0.000000,0.000000,0.039049,0.029630,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.037699,0.000000,0.009000,0.011723,0.000000,0.041911,0.058239,0.025139,0.018369,0.002342,0.025287,0.016424,0.000503,0.003943,0.031650,0.000000,0.011006,0.000000,0.008044,0.000000,0.106411,0.087432,0.081241,0.110331,0.090367,0.029143,0.025577,0.068724      
+PolyaStrength: -7.379417419433594       
+Index: 1.0      
+```
+- Text file entry for central nucleotide in example sequence:        
+```
+sequence:AGAGCCGTGAAGGCCCAGGGGACCTGCGTGTCTTGGCTCCACGCCAGATGTGTTATTATTTATGTCTCTGAGAATGTCTGGATCTCAGAGCCGAATTACAATAAAAACATCTTTAAACTTATTTCTACCTCATTTTGGGGTTGCCAGCTCACCTGATCATTTTTATGAACTGTCATGAACACTGATGACATTTTATGAGCCTTTTACATGGGACACTACAGAATACATTTGTCAGCGAGG      
+PolyaID: 0.9993072152137756     
+cleavage_vector: 0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.015632,0.069378,0.390414,0.362004,0.132278,0.029009,0.001284,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000      
+PolyaStrength: -2.02956485748291        
+Index: 121.0   
+```     
+
 ### Usage directions for current pipeline - jupyter notebook
 PolyaID and PolyaStrength can be used to make new predictions from new sequences, or a file containing genomic regions of interest. Due to biological relevancy and model interpertability, we do not support analysis of sequences shorter than 60 nucleotides.
 
@@ -46,65 +101,3 @@ Text file that works as an input for predicting polya sites along genomic region
 
 **sliding_windows.txt**
 File generated if input is a sequence. The sequence is padded and broken up into consecutive windows of 240 nucleotides.
-
-
-### Usage directions for old Polya Analsyis V1 - Included in Polya_v1 branch
-
-**predictor_tool/PolyaID_PolyaStrength_prediction.py**
-> This file contains the predictor tool to make new predictions using PolyaID and PolyaStrength. It is designed to be used as a command-line tool, which users can invoke as shown in the examples below.
-
-**predictor_tool/PolyaID_PolyaStrength_utilities.py**
-> This file contains the utility and helper functions used by the predictor tool. For example, functions to extract the genomic sequence if needed, build and reload the PolyaID and PolyaStrength models, and flow batches of data into the models for predictions are here.
-
-**predictor_tool/PolyaID_model.h5**
-> The trained model weights for PolyaID.
-
-**predictor_tool/PolyaStrength_model.h5**
-> The trained model weights for PolyaStrength.
-
-### Example prediction from sequence
-
-```sh
-python PolyaID_PolyaStrength_prediction.py from_sequence -s 'AGAGCCGTGAAGGCCCAGGGGACCTGCGTGTCTTGGCTCCACGCCAGATGTGTTATTATTTATGTCTCTGAGAATGTCTGGATCTCAGAGCCGAATTACAATAAAAACATCTTTAAACTTATTTCTACCTCATTTTGGGGTTGCCAGCTCACCTGATCATTTTTATGAACTGTCATGAACACTGATGACATTTTATGAGCCTTTTACATGGGACACTACAGAATACATTTGTCAGCGAGG'
-```
-
-This will give the following output: 
-
-```
-Sequence: AGAGCCGTGAAGGCCCAGGGGACCTGCGTGTCTTGGCTCCACGCCAGATGTGTTATTATTTATGTCTCTGAGAATGTCTGGATCTCAGAGCCGAATTACAATAAAAACATCTTTAAACTTATTTCTACCTCATTTTGGGGTTGCCAGCTCACCTGATCATTTTTATGAACTGTCATGAACACTGATGACATTTTATGAGCCTTTTACATGGGACACTACAGAATACATTTGTCAGCGAGG
-PolyaID: 0.9993073 [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.015632376074790955, 0.06937781721353531, 0.3904140591621399, 0.3620043098926544, 0.132278174161911, 0.029009360820055008, 0.0012839401606470346, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
-PolyaStrength: -2.0295653
-```
-
-A putative polyA site with this sequence is expected to occur with a classification probability >0.999 from PolyaID. The cleavage probability +/- 25 nt surrounding this site is then predicted. This site has a PolyaStrength score of -2.03, which on a probability scale is equivalent to an expected usage of ~20%.
-
-### Example prediction from genomic location
-
-**Note:** Predictions can be made from genomic locations but the genome FASTA and chrom.sizes files will need to be provided by the user.
-
-```sh
-python PolyaID_PolyaStrength_prediction.py from_position -p 'chr1:932116:+'  -g ./genome.fa -c ./chrom.sizes
-```
-
-This will give the following output:
-
-```
-Sequence: AGAGCCGTGAAGGCCCAGGGGACCTGCGTGTCTTGGCTCCACGCCAGATGTGTTATTATTTATGTCTCTGAGAATGTCTGGATCTCAGAGCCGAATTACAATAAAAACATCTTTAAACTTATTTCTACCTCATTTTGGGGTTGCCAGCTCACCTGATCATTTTTATGAACTGTCATGAACACTGATGACATTTTATGAGCCTTTTACATGGGACACTACAGAATACATTTGTCAGCGAGG
-PolyaID: 0.9993073 [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.015632376074790955, 0.06937781721353531, 0.3904140591621399, 0.3620043098926544, 0.132278174161911, 0.029009360820055008, 0.0012839401606470346, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
-PolyaStrength: -2.0295653
-```
-
-At chromosome 1, position 932,116 on the forward strand, a putative polyA site at this location is expected with a classification probability >0.999 from PolyaID. The cleavage probability +/- 25 nt surrounding this site is then predicted. This site has a PolyaStrength score of -2.03, which on a probability scale is equivalent to an expected usage of ~20%.
-
-
-## Putative PolyA Sites in hg38
-
-We made predictions across hg38 in gene-associated regions and created a compendium of putative polyA sites. These tracks are included when the repository is cloned locally but not when the zipped repository is downloaded. In that case, the tracks will need to be downloaded manually from the GitHub browser using the "Download" button. 
-
-**putative_sites/putative_polya_sites.+.bb**
-> Contains the putative polyA sites located on the forward strand in bigBed format. The sites are annotated with the PolyaID classification probability, PolyaStrength score, and gene and feature information.
-
-**putative_sites/putative_polya_sites.-.bb**
-> Contains the putative polyA sites located on the reverse strand in bigBed format. The sites are annotated with the PolyaID classification probability, PolyaStrength score, and gene and feature information.
-
-
