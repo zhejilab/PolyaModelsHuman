@@ -54,32 +54,23 @@ Axis1: PolyaID classification – Shows predicted polyadenylation probability pe
 Axis2: Positive cleavage vectors – Distribution of cleavage site predictions across the sequence.
 Axis3: Normalized cleavage profile – Cleavage probability at each nucleotide across all scanning model predictions.
 Axis4: Representative cleavage site – Marks the most likely positions where cleavage actually occurs.
-```
-- **`sliding_windows.txt`** – 240-nt windows generated from your input (with padding by the script).  
-- **`sliding_windows_with_scores_and_index.txt`** – Each window plus:  
+```  
+- **`polya_sites.example.txt`** – Each identified representative polya site:  
+    - `Position`
     - `PolyaID`
-    - `cleavage_vector`
     - `PolyaStrength`
-    - `Index`       
-- Text file entry for first nucleotide in example sequence:      
-```
-sequence:NNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNAGAGCCGTGAAGGCCCAGGGGACCTGCGTGTCTTGGCTCCACGCCAGATGTGTTATTATTTATGTCTCTGAGAATGTCTGGATCTCAGAGCCGAATTACAATAAAAACATCTTTAAACTT       
-PolyaID: 0.5684121251106262     
-cleavage_vector: 0.008032,0.022785,0.000000,0.000000,0.039049,0.029630,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.037699,0.000000,0.009000,0.011723,0.000000,0.041911,0.058239,0.025139,0.018369,0.002342,0.025287,0.016424,0.000503,0.003943,0.031650,0.000000,0.011006,0.000000,0.008044,0.000000,0.106411,0.087432,0.081241,0.110331,0.090367,0.029143,0.025577,0.068724      
-PolyaStrength: -7.379417419433594       
-Index: 1.0      
-```
-- Text file entry for central nucleotide in example sequence:        
-```
-sequence:AGAGCCGTGAAGGCCCAGGGGACCTGCGTGTCTTGGCTCCACGCCAGATGTGTTATTATTTATGTCTCTGAGAATGTCTGGATCTCAGAGCCGAATTACAATAAAAACATCTTTAAACTTATTTCTACCTCATTTTGGGGTTGCCAGCTCACCTGATCATTTTTATGAACTGTCATGAACACTGATGACATTTTATGAGCCTTTTACATGGGACACTACAGAATACATTTGTCAGCGAGG      
-PolyaID: 0.9993072152137756     
-cleavage_vector: 0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.015632,0.069378,0.390414,0.362004,0.132278,0.029009,0.001284,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000      
-PolyaStrength: -2.02956485748291        
-Index: 121.0   
-```     
+    - `sequence`
+    - `cleavage_vector`
+- See example file titled **`polya_sites.example.txt`** for what data is in each field
+
+## Jupyter Notebook Polya Prediction Workspace  
 
 ### Usage directions for current pipeline - jupyter notebook
 PolyaID and PolyaStrength can be used to make new predictions from new sequences, or a file containing genomic regions of interest. Due to biological relevancy and model interpertability, we do not support analysis of sequences shorter than 60 nucleotides.
+
+```
+If you want to customize output files or output plots, the functions used in pipeline.py are all laid out in an easy to interpret fashion across different jupyter notebook cells.
+```
 
 #### Important Notice
 Due to file sizes, the genome FASTA files could not be added to this repo. If you wish to use these files for predictions please name them as they appear in the jupyter notebook workflow in the cell under the header 'Data'. The missing files are:
