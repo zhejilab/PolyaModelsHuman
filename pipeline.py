@@ -1,4 +1,3 @@
-
 import os, csv, ast, subprocess
 from pathlib import Path
 import pickle
@@ -9,6 +8,32 @@ import matplotlib.pyplot as plt
 import matplotlib.patches as ptc
 from matplotlib.ticker import MultipleLocator
 
+# Ensure a clean output without unnecessary logs
+import logging, warnings
+os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"
+os.environ["TF_ENABLE_ONEDNN_OPTS"] = "0"
+os.environ["TQDM_DISABLE"] = "1"
+
+warnings.filterwarnings("ignore")
+logging.getLogger("tensorflow").setLevel(logging.FATAL)
+logging.getLogger("h5py").setLevel(logging.ERROR)
+logging.basicConfig(level=logging.ERROR)
+
+try:
+    import tensorflow as tf
+    tf.get_logger().setLevel("ERROR")
+    import absl.logging as absl_logging
+    absl_logging.set_verbosity(absl_logging.ERROR)
+except ImportError:
+    pass
+
+try:
+    from tqdm import tqdm
+    tqdm.__init__ = lambda *args, **kwargs: None
+except ImportError:
+    pass
+
+# Define paths and directories
 PROJECT   = os.path.abspath(os.path.join(".",""))
 RESOURCES = os.path.join(PROJECT, "resources")
 RESULTS   = os.path.join(PROJECT, "results")
@@ -22,6 +47,7 @@ CODE_DIR = Path("code")
 OUTDIR   = Path("results")
 OUTDIR.mkdir(exist_ok=True, parents=True)
 
+# Helper functions
 def extractsequence(genome, chrom, start, end, strand):
     if strand == "+":
         sequence = genome[chrom][start:end].seq
@@ -43,6 +69,7 @@ def get_sequence(genome, chrom_sizes, chrom, position, strand):
         raise ValueError(f'Requested input with interval {sequence_length}bp exceeds the chromosome size.')
 
     return extractsequence(genome, chrom, start, end, strand).upper()
+
 
 def temp_generate_data(sequences):
 
@@ -75,6 +102,7 @@ def temp_generate_data(sequences):
             for gen_id, idx in [('predict', data_idx)]
         }
     return allSequenceGenerator
+
 
 def whole_gene_classification(ax, region, inputs, reads_dict, nbins = None, binwidth = None, normalize = None, arrow_int = 1000):
 
@@ -334,7 +362,7 @@ def run_predictions(windows_txt: Path, outdir: Path, codedir: Path, model_paths:
     merged = outdir / f"{windows_txt.stem}.comprehensive_predictions.txt"
     # run each model
     for mtype, mpath in model_paths.items():
-        print(f"[Predict] {mtype} …")
+        print(f"Predict {mtype} …")
         proc = subprocess.run([
             "python3", str(codedir/"example.prediction.py"),
             "--model",      str(mpath),
@@ -356,7 +384,6 @@ def run_predictions(windows_txt: Path, outdir: Path, codedir: Path, model_paths:
             c1, c2 = l1.rstrip().split("\t"), l2.rstrip().split("\t")
             out.write("\t".join(c1[:9] + c2[-2:]) + "\n")
     return merged
-
 
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 
@@ -614,7 +641,7 @@ def run_predictions2(windows_txt: Path, outdir: Path, codedir: Path, model_paths
     merged = outdir / "comprehensive_predictions.txt"
     # run each model
     for mtype, mpath in model_paths.items():
-        print(f"[Predict] {mtype} …")
+        print(f"Predict {mtype} …")
         proc = subprocess.run([
             "python3", str(codedir/"example.prediction.py"),
             "--model",      str(mpath),
@@ -637,14 +664,18 @@ def run_predictions2(windows_txt: Path, outdir: Path, codedir: Path, model_paths
             out.write("\t".join(c1[:9] + c2[-2:]) + "\n")
     return merged
 
-
-def cleavage_profile_explanation2(ax, region, inputs, reads_dict, genome,
-    visible_region=None, visible_labels=None, cutoff_class=0.5, cutoff_clv=0.05,
-    background=0.02, normalize=False, ylims_3reads=None, ylims_clv=None, ylims_pro=None):
+def cleavage_profile_explanation2(
+    ax, region, inputs, reads_dict, genome,
+    visible_region=None, visible_labels=None,
+    cutoff_class=0.5, cutoff_clv=0.05, background=0.02, normalize=False,
+    ylims_3reads=None, ylims_clv=None, ylims_pro=None
+):
+    import numpy as np
+    from matplotlib.ticker import MultipleLocator
 
     sequences, encodings, classprobs, cleavage_vecs, cleavage_ctrs, idx = inputs
 
-    n = len(classprobs)                              # number of windows
+    n = len(classprobs)
     if visible_region is None:
         visible_region = (region['start'], region['start'] + n)
 
@@ -656,153 +687,139 @@ def cleavage_profile_explanation2(ax, region, inputs, reads_dict, genome,
     subset_xs   = xs[subset_mask]
 
     reads = np.asarray([reads_dict.get((region['strand'], region['chrom'], x), 0) for x in xs])
+    ax[0].bar(subset_xs, reads[subset_idxs], width=2, color='gray')
+    if ylims_3reads is not None:
+        ax[0].yaxis.set_major_locator(MultipleLocator(ylims_3reads[1]))
+        ax[0].set_ylim(ylims_3reads)
 
-    class_idx = []
-    class_clv_idx = []
-    cleavage_cols = []
-
-    for i,x in zip(subset_idxs, subset_xs):
-
-        if (classprobs[i] > cutoff_class):
+    class_idx, class_clv_idx, cleavage_cols = [], [], []
+    for i, x in zip(subset_idxs, subset_xs):
+        if classprobs[i] > cutoff_class:
             class_idx.append(i)
-
-            if (cleavage_ctrs[i] > cutoff_clv):
-                p = ax[2].plot(np.arange(x-25,x+25,1), cleavage_vecs[i], linewidth = 0.5, alpha = 0.50, zorder = 2)
-                pcolor = p[-1].get_color()
-                cleavage_cols.append(pcolor)
+            if cleavage_ctrs[i] > cutoff_clv:
+                p = ax[2].plot(np.arange(x-25, x+25, 1), cleavage_vecs[i],
+                               linewidth=0.5, alpha=0.50, zorder=2)
+                cleavage_cols.append(p[-1].get_color())
                 class_clv_idx.append(i)
-
             else:
-                ax[2].plot(np.arange(x-25,x+25,1), cleavage_vecs[i], linewidth = 0.25, alpha = 0.05, color = 'gray', zorder = 1)
+                ax[2].plot(np.arange(x-25, x+25, 1), cleavage_vecs[i],
+                           linewidth=0.25, alpha=0.05, color='gray', zorder=1)
 
     class_idx     = np.asarray(class_idx)
     class_clv_idx = np.asarray(class_clv_idx)
     cleavage_cols = np.asarray(cleavage_cols)
 
-
-    ## plot known 3'READS
-    ax[0].bar(subset_xs, reads[subset_idxs], width = 2, color = 'gray')
-    
-    ax[0].yaxis.set_major_locator(MultipleLocator(ylims_3reads[1]))
-    ax[0].set_ylim(ylims_3reads)
-
-
-    ## plot classification predictions
     adj_classprobs = np.asarray(classprobs) - 0.5
-    colormat=np.where(adj_classprobs < 0, 'C0','C3')
-
-    ax[1].bar(subset_xs, adj_classprobs[subset_idxs], width = 1, color = colormat[subset_idxs])
-    ax[1].axhline(y = 0, color = 'black', linestyle = 'dashed', linewidth = 0.5)
-
-    ax[1].set_ylim((-0.55,0.55))
+    colormat = np.where(adj_classprobs < 0, 'C0', 'C3')
+    ax[1].bar(subset_xs, adj_classprobs[subset_idxs], width=1, color=colormat[subset_idxs])
+    ax[1].axhline(y=0, color='black', linestyle='dashed', linewidth=0.5)
+    ax[1].set_ylim((-0.55, 0.55))
     ax[1].set_yticks([-0.5, 0.5])
     ax[1].set_yticklabels([0, 1.0])
-
     ax[1].yaxis.set_minor_locator(MultipleLocator(0.5))
 
+    ax[2].axhline(y=cutoff_clv, color='black', linestyle='dashed', linewidth=0.5)
+    if class_clv_idx.size > 0:
+        ax[2].scatter(xs[class_clv_idx], np.asarray(cleavage_ctrs)[class_clv_idx],
+                      color=cleavage_cols, s=2, zorder=3)
 
-    # ## plot cleavage vector predictions
-    # ax[2].scatter(xs[class_idx], cleavage_ctrs[class_idx], color = cleavage_cols, s = 3, zorder = 2)
-
-    ## plot cleavage vectors passing thresholds to generate cleavage profile
-    ax[2].axhline(y = 0.05, color = 'black', linestyle = 'dashed', linewidth = 0.5)
-    ax[2].scatter(xs[class_clv_idx], cleavage_ctrs[class_clv_idx], color = cleavage_cols, s = 2, zorder = 3)
-
-    ax[2].yaxis.set_major_locator(MultipleLocator(ylims_clv[1]))
+    if ylims_clv is None:
+        if class_clv_idx.size > 0:
+            vmax_vec = float(np.max([np.max(cleavage_vecs[i]) for i in class_clv_idx]))
+            vmax_ctr = float(np.max(np.asarray(cleavage_ctrs)[class_clv_idx]))
+            ymax = max(vmax_vec, vmax_ctr) * 1.15
+        else:
+            ymax = 0.1
+        ylims_clv = (0, max(0.1, ymax))
     ax[2].set_ylim(ylims_clv)
+    ax[2].yaxis.set_major_locator(MultipleLocator(ylims_clv[1]))
 
-    ## plot mean cleavage profile
-    pred_dict = dict(zip(xs[class_clv_idx], cleavage_vecs[class_clv_idx]))
+    pred_dict = dict(zip(xs[class_clv_idx], np.asarray(cleavage_vecs)[class_clv_idx]))
     cleavage_profs = []
-
     for pos in subset_xs:
-
-        pstart, pend = (pos-25, pos+25)
-        results = [(p, pred_dict.get(p)) for p in range(pstart+1,pend) if (p in pred_dict)]
-
-        if (len(results) > 0):
+        pstart, pend = (pos - 25, pos + 25)
+        results = [(p, pred_dict.get(p)) for p in range(pstart + 1, pend) if (p in pred_dict)]
+        if results:
             starts, cleavages = list(zip(*results))
-            positive_arr = np.zeros((len(results),))
-
-            for i, (ostart, ocleavage) in enumerate(zip(starts, cleavages)):
-                odict = dict(zip(list(range(ostart-25,ostart+25)), ocleavage))
-                positive_arr[i,] = odict[pos]
-
-            outmean = np.mean(positive_arr, axis = 0)
-
-            if (outmean > background):
-                cleavage_profs.append(outmean - background)
-            else:
-                cleavage_profs.append(0)
-
+            positive_arr = np.zeros(len(results))
+            for i, (ostart, ovec) in enumerate(zip(starts, cleavages)):
+                odict = dict(zip(list(range(ostart - 25, ostart + 25)), ovec))
+                positive_arr[i] = odict[pos]
+            outmean = np.mean(positive_arr, axis=0)
+            cleavage_profs.append(max(outmean - background, 0))
         else:
-            cleavage_profs.append(0)
-
+            cleavage_profs.append(0.0)
     cleavage_profs = np.asarray(cleavage_profs)
+    if normalize and cleavage_profs.sum() > 0:
+        cleavage_profs = cleavage_profs / cleavage_profs.sum()
 
-    if (normalize) and (np.sum(cleavage_profs) > 0):
-        cleavage_profs = cleavage_profs / np.sum(cleavage_profs)
+    ax[3].plot(subset_xs, cleavage_profs, linewidth=0.5, color='gray')
 
-    ax[3].plot(subset_xs, cleavage_profs, linewidth = 0.5, color = 'gray')
-
-    ax[3].yaxis.set_major_locator(MultipleLocator(ylims_pro[1]))
+    if ylims_pro is None:
+        ymax_p = float(np.max(cleavage_profs)) if cleavage_profs.size else 0.1
+        ylims_pro = (0, max(0.1, ymax_p * 1.15))
     ax[3].set_ylim(ylims_pro)
+    ax[3].yaxis.set_major_locator(MultipleLocator(ylims_pro[1]))
 
+    repr_xs, repr_vals = [], []
+    prof_mask = (cleavage_profs > 0)
+    if prof_mask.any():
+        idx_profile = np.flatnonzero(prof_mask)
+        split_pts = np.where(np.diff(idx_profile) != 1)[0] + 1
+        prof_clusters = np.split(idx_profile, split_pts)
 
-    ## plot representative sites from whole genome analysis if available
-    ## otherwise plot the maximum site of the cleavage profile track
-    
-    if ('repr_sites' in region):
-        
-        clv_idx = np.where(np.isin(subset_xs, region['repr_sites']))
-        clv_xs  = subset_xs[clv_idx]
-        clv_pro = cleavage_profs[clv_idx]
-        
-        ax[4].bar(clv_xs, clv_pro, width = 1.2, color = 'gray')
-        outputs = (clv_xs, clv_pro)
-        
-    else:
+        for cl in prof_clusters:
+            if cl.size == 0:
+                continue
+            cl_xs = subset_xs[cl]
+            in_seg = []
+            for j in class_clv_idx:
+                xj = xs[j]
+                if cl_xs[0] <= xj <= cl_xs[-1]:
+                    in_seg.append(j)
 
-        cleavage_max_idx = np.argmax(cleavage_profs)
-        ax[4].bar(subset_xs[cleavage_max_idx], cleavage_profs[cleavage_max_idx], width = 1.2, color = 'gray')
-        outputs = ([subset_xs[cleavage_max_idx]], [cleavage_profs[cleavage_max_idx]])
+            best_idx, best_val = None, -np.inf
+            for j in in_seg:
+                vec = np.asarray(cleavage_vecs[j])
+                if vec.argmax() == 25 and vec[25] >= cutoff_clv:
+                    if vec[25] > best_val:
+                        best_val = vec[25]
+                        best_idx = j
 
-    ax[4].yaxis.set_major_locator(MultipleLocator(ylims_pro[1]))
-    ax[4].set_ylim(ylims_pro)
+            if best_idx is not None:
+                repr_xs.append(xs[best_idx])
+                repr_vals.append(best_val)
+            else:
+                seg_argmax_local = cl[np.argmax(cleavage_profs[cl])]
+                repr_xs.append(subset_xs[seg_argmax_local])
+                repr_vals.append(cleavage_profs[seg_argmax_local])
 
+    ax[4].bar(repr_xs, repr_vals, width=1.2, color='gray')
+    if ylims_pro is not None:
+        ax[4].yaxis.set_major_locator(MultipleLocator(ylims_pro[1]))
+        ax[4].set_ylim(ylims_pro)
 
-    if (visible_labels is not None):
-
+    if visible_labels is not None:
         ax[0].set_xlim(visible_region)
-
-        if (visible_labels == 'relative'):
-
-            ax[0].set_xticks(np.arange(visible_region[0], visible_region[1]+1, 100))
-            ax[0].set_xticklabels(np.arange(-1 *(visible_region[1]-visible_region[0])/2, 1+(visible_region[1]-visible_region[0])/2, 100, dtype = int))
-
+        if visible_labels == 'relative':
+            ax[0].set_xticks(np.arange(visible_region[0], visible_region[1] + 1, 100))
+            ax[0].set_xticklabels(np.arange(
+                -1 * (visible_region[1] - visible_region[0]) / 2,
+                 1 + (visible_region[1] - visible_region[0]) / 2, 100, dtype=int))
             ax[0].xaxis.set_minor_locator(MultipleLocator(25))
-
         else:
-
             ax[0].xaxis.set_major_locator(MultipleLocator(100))
             ax[0].xaxis.set_minor_locator(MultipleLocator(25))
 
-
-    ## Remove spines from top and right edges of plot
-    ## Reverse axis if the example gene is on the negative strand
     for a in ax:
-        
         a.spines['right'].set_visible(False)
         a.spines['top'].set_visible(False)
-        
-        if (region['strand'] == '-'):
+        if region.get('strand', '+') == '-':
             a.xaxis.set_inverted(True)
 
-    return outputs
+    return (repr_xs, repr_vals)
 
-
-
-
+# Data
 genome = pyfaidx.Fasta(os.path.join(RESOURCES, "hg38.genome.fa"))
 
 chrom_sizes = {}
@@ -813,7 +830,7 @@ with open(os.path.join(RESOURCES, "hg38.chrom.sizes"), mode = 'r') as infile:
 with open(os.path.join(RESOURCES, "reads3_scoring_dictionary.pickle"), mode = 'rb') as handle:
     reads_dict = pickle.load(handle)
 
-
+# Input sequence
 seq = input("Enter your sequence: ").strip().upper()
 valid_bases = set("ACGTN")
 if not seq or any(base not in valid_bases for base in seq):
@@ -823,15 +840,16 @@ args = "N" * 120 + seq + "N" * 120
 total_length = len(args)
 print(f"Input sequence length: {total_length} nt")
 
+''' example
+AGAGCCGTGAAGGCCCAGGGGACCTGCGTGTCTTGGCTCCACGCCAGATGTGTTATTATTTATGTCTCTGAGAATGTCTGGATCTCAGAGCCGAATTACAATAAAAACATCTTTAAACTTATTTCTACCTCATTTTGGGGTTGCCAGCTCACCTGATCATTTTTATGAACTGTCATGAACACTGATGACATTTTATGAGCCTTTTACATGGGACACTACAGAATACATTTGTCAGCGAGG
+'''
 
 ## PREPARE MODELS
 polyaID = make_polyaid_model("resources/published_models/PolyaID.h5")
 polyaStrength = make_polyastrength_model("resources/published_models/PolyaStrength.h5")
 
-
 sequence = args
 save_sliding_windows(sequence, 'sliding_windows.txt')
-
 
 sequence = args
 len_sequence = len(sequence)
@@ -839,13 +857,12 @@ len_sequence = len(sequence)
 if len_sequence < 240:
 	raise ValueError("Input sequence is less than 240 nt.")
 
-# Generate sliding windows if sequence is longer than 240 nt
 windows = [sequence[i:i+240] for i in range(len_sequence - 240 + 1)]
 
 for idx, window_seq in enumerate(windows):
 	encoding = generate_data(window_seq)['predict'][0]
 
-	polyaID_prediction     = polyaID.predict(encoding)
+	polyaID_prediction     = polyaID.predict(encoding, verbose=0)
 	polyaID_classification = polyaID_prediction[0][0][0]
 	polyaID_rawcleavage    = polyaID_prediction[1].flatten()
 
@@ -853,11 +870,7 @@ for idx, window_seq in enumerate(windows):
 	polyaID_subtracted[polyaID_subtracted <= 0] = 0
 	polyaID_normcleavage = polyaID_subtracted / np.sum(polyaID_subtracted) if (np.sum(polyaID_subtracted) > 0) else np.asarray([0]*50)
 
-	polyaStrength_score = polyaStrength.predict(encoding)[0][0]
-	print("PolyaID:", polyaID_classification, polyaID_normcleavage.tolist())
-	print("PolyaStrength:", polyaStrength_score)
-	print()
-
+	polyaStrength_score = polyaStrength.predict(encoding, verbose=0)[0][0]
 
 
 df = pd.read_csv("sliding_windows.txt", sep="\t")
@@ -869,13 +882,13 @@ polyastrength_scores = []
 for seq in df["sequence"]:
     encoding = generate_data(seq)['predict'][0]
 
-    pid_pred = polyaID.predict(encoding)
+    pid_pred = polyaID.predict(encoding, verbose=0)
     pid_score = pid_pred[0][0][0]
     pid_raw = pid_pred[1].flatten()
     pid_sub = np.maximum(pid_raw - 0.02, 0)
     pid_norm = (pid_sub / pid_sub.sum()) if pid_sub.sum() > 0 else np.zeros(50, dtype=float)
 
-    pstr = polyaStrength.predict(encoding)[0][0]
+    pstr = polyaStrength.predict(encoding, verbose=0)[0][0]
 
     polyaid_scores.append(float(pid_score))
     polyaid_normvec_str.append(",".join(f"{x:.6f}" for x in pid_norm))
@@ -890,14 +903,14 @@ center_base = df["sequence"].str[mid_pos].str.upper()
 valid = center_base != "N"
 idx_vals = np.full(len(df), np.nan, dtype=float)
 idx_vals[valid.values] = np.arange(1, valid.sum() + 1, dtype=int)
-df["Index"] = idx_vals
+df["Position"] = idx_vals
 
 df = df.drop(columns=["chrom", "start", "end", "strand"], errors="ignore")
-cols = [c for c in df.columns if c != "Index"]
-df = df[cols + ["Index"]]
+cols = [c for c in df.columns if c != "Position"]
+df = df[cols + ["Position"]]
 
-df.to_csv("sliding_windows_with_scores_and_index.txt", sep="\t", index=False)
-print("Saved to 'sliding_windows_with_scores_and_index.txt'")
+df.to_csv("sliding_windows_representatives.txt", sep="\t", index=False)
+
 
 
 merged_predictions = run_predictions2(
@@ -906,8 +919,6 @@ merged_predictions = run_predictions2(
     CODE_DIR,
     MODEL_PATHS
 )
-print("Merged file saved to:", merged_predictions)
-
 
 examples = []
 with open("results/comprehensive_predictions.txt", newline="") as fh:
@@ -947,7 +958,7 @@ _ = cleavage_profile_explanation2(
     axes, region, inputs, reads_dict, genome,
     visible_region=(0, n), visible_labels='absolute',
     cutoff_class=0.5, cutoff_clv=0.05, normalize=True,
-    ylims_3reads=(0,10), ylims_clv=(0,0.1), ylims_pro=(0,0.1),
+    ylims_3reads=(0,10), ylims_clv=None, ylims_pro=None,
 )
 
 axes[1].set_ylabel("PolyaID\nclassification",       rotation=0, ha='right', va='center')
@@ -956,7 +967,79 @@ axes[3].set_ylabel("Normalized\ncleavage\nprofile", rotation=0, ha='right', va='
 axes[4].set_ylabel("Representative\ncleavage site", rotation=0, ha='right', va='center')
 
 plt.tight_layout()
-plt.savefig(OUTDIR / "cleavage_profile_explanation.pdf", dpi=600, transparent=True)
+plt.savefig(OUTDIR / "cleavage_profile_explanation.example.pdf", dpi=600, transparent=True)
 plt.show()
 
 
+import numpy as np
+import pandas as pd
+
+df2 = pd.read_csv("sliding_windows_representatives.txt", sep="\t")
+
+vecs = np.vstack(df2["cleavage_vector"].apply(lambda s: np.fromstring(s, sep=",")))
+classp = df2["PolyaID"].to_numpy(float)
+centers = vecs[:, 25]
+cutoff_class = 0.5
+cutoff_clv   = 0.05
+background   = 0.02
+normalize    = True
+keep = (classp >= cutoff_class) & (centers >= cutoff_clv)
+
+n = len(df2)
+m = vecs.shape[1]
+center_bin = 25
+acc = np.zeros(n, dtype=float)
+cnt = np.zeros(n, dtype=float)
+
+for i in range(n):
+    if not keep[i]:
+        continue
+    start = i - center_bin
+    end   = start + m
+    o_s = max(0, start)
+    o_e = min(n, end)
+    if o_e <= o_s:
+        continue
+    v_s = o_s - start
+    v_e = v_s + (o_e - o_s)
+    acc[o_s:o_e] += vecs[i, v_s:v_e]
+    cnt[o_s:o_e] += 1
+
+profile = np.zeros_like(acc)
+nz = cnt > 0
+profile[nz] = acc[nz] / cnt[nz]
+profile = np.maximum(profile - background, 0.0)
+if normalize and profile.sum() > 0:
+    profile = profile / profile.sum()
+
+cluster_cutoff = 0.0
+clusters = []
+in_seg = False
+for i, v in enumerate(profile):
+    if v > cluster_cutoff and not in_seg:
+        seg_start = i
+        in_seg = True
+    elif v <= cluster_cutoff and in_seg:
+        clusters.append((seg_start, i-1))
+        in_seg = False
+if in_seg:
+    clusters.append((seg_start, n-1))
+
+peak_rows = []
+rep_heights = []
+for cid, (s, e) in enumerate(clusters, start=1):
+    if e < s:
+        continue
+    seg = profile[s:e+1]
+    k = s + int(np.argmax(seg))
+    peak_rows.append(k)
+    rep_heights.append(float(profile[k]))
+
+if len(peak_rows) == 0:
+    print("cluster profile all 0")
+else:
+    out = df2.iloc[peak_rows].copy()
+    out = out[["Position", "PolyaID", "PolyaStrength", "sequence", "cleavage_vector"]]
+    out["PolyaID"] = out["PolyaID"].round(3)
+    out["PolyaStrength"] = out["PolyaStrength"].round(3)
+    out.to_csv("polya_sites.example.txt", sep="\t", index=False)
