@@ -14,10 +14,12 @@ Contact *zhe.ji (at) northwestern.edu* with any questions.
 - Keras == 3.10.0
 - NumPy == 2.0.2
 - Pandas == 2.2.3
-- pyfaidx == 0.8.1.4
+- Pyfaidx == 0.8.1.4
 - Isolearn == 0.2.1
 - Matplotlib == 3.9.4
 - Ipykernel == 6.29.5
+- Scipy == 1.13.1
+- Tqdm == 4.67.1
 
 Warning: We are still validating that these are the only required packages. 
 
@@ -50,7 +52,7 @@ AGAGCCGTGAAGGCCCAGGGGACCTGCGTGTCTTGGCTCCACGCCAGATGTGTTATTATTTATGTCTCTGAGAATGTCTG
 
 - **`results/cleavage_profile_explanation.pdf`** - Comprehensive predictions plot to identify individual Polya sites
 
-![cleavage profile explanation pdf](https://github.com/zhejilab/PolyaModelsHuman/blob/main/results/cleavage_profile_explanation.example.pdf)
+![cleavage profile explanation pdf](/results/cleavage_profile_explanation.example.pdf)
 
 ``` 
 Axis1: PolyaID classification – Predicted polyadenylation probability per position (cutoff = 0.75)
