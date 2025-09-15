@@ -52,7 +52,7 @@ AGAGCCGTGAAGGCCCAGGGGACCTGCGTGTCTTGGCTCCACGCCAGATGTGTTATTATTTATGTCTCTGAGAATGTCTG
 
 - **`results/cleavage_profile_explanation.pdf`** - Comprehensive predictions plot to identify individual Polya sites
 
-[![polya_cleavage_profiles](/results/cleavage_profile_explanation.pdf)]
+[![polya_cleavage_profiles](/results/cleavage_profile_explanation.example.pdf)]
 
 ``` 
 Axis1: PolyaID classification – Predicted polyadenylation probability per position (cutoff = 0.75)
