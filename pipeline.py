@@ -640,10 +640,24 @@ def save_sliding_windows(sequence, output_path):
 def run_predictions2(windows_txt: Path, outdir: Path, codedir: Path, model_paths: dict):
     merged = outdir / "comprehensive_predictions.txt"
     # run each model
+    # run this code if using mac os or linux
+    # for mtype, mpath in model_paths.items():
+    #     print(f"Predict {mtype} …")
+    #     proc = subprocess.run([
+    #         "python3", str(codedir/"example.prediction.py"),
+    #         "--model",      str(mpath),
+    #         "--modeltype",  mtype,
+    #         "--data",       str(windows_txt),
+    #         "--dataname",   "seq",
+    #         "--outdir",     str(outdir)
+    #     ], capture_output=True, text=True)
+    #     print(proc.stdout, proc.stderr, sep="\n")
+    #     proc.check_returncode()
+    # use this code if using windows
     for mtype, mpath in model_paths.items():
         print(f"Predict {mtype} …")
         proc = subprocess.run([
-            "python3", str(codedir/"example.prediction.py"),
+            "python", str(codedir/"example.prediction.py"),
             "--model",      str(mpath),
             "--modeltype",  mtype,
             "--data",       str(windows_txt),
@@ -652,6 +666,7 @@ def run_predictions2(windows_txt: Path, outdir: Path, codedir: Path, model_paths
         ], capture_output=True, text=True)
         print(proc.stdout, proc.stderr, sep="\n")
         proc.check_returncode()
+
     # merge
     p1 = outdir/"seq.predictions_polyaid.txt"
     p2 = outdir/"seq.predictions_polyastrength.txt"
@@ -709,12 +724,12 @@ def cleavage_profile_explanation2(
     class_clv_idx = np.asarray(class_clv_idx)
     cleavage_cols = np.asarray(cleavage_cols)
 
-    adj_classprobs = np.asarray(classprobs) - 0.5
+    adj_classprobs = np.asarray(classprobs) - 0.75 #this is a hardcoded value to visualize predictions 
     colormat = np.where(adj_classprobs < 0, 'C0', 'C3')
     ax[1].bar(subset_xs, adj_classprobs[subset_idxs], width=1, color=colormat[subset_idxs])
     ax[1].axhline(y=0, color='black', linestyle='dashed', linewidth=0.5)
-    ax[1].set_ylim((-0.55, 0.55))
-    ax[1].set_yticks([-0.5, 0.5])
+    ax[1].set_ylim((-0.8, 0.3))
+    ax[1].set_yticks([-0.75, 0.25])
     ax[1].set_yticklabels([0, 1.0])
     ax[1].yaxis.set_minor_locator(MultipleLocator(0.5))
 
@@ -820,15 +835,15 @@ def cleavage_profile_explanation2(
     return (repr_xs, repr_vals)
 
 # Data
-genome = pyfaidx.Fasta(os.path.join(RESOURCES, "hg38.genome.fa"))
+#genome = pyfaidx.Fasta(os.path.join(RESOURCES, "hg38.genome.fa"))
 
-chrom_sizes = {}
-with open(os.path.join(RESOURCES, "hg38.chrom.sizes"), mode = 'r') as infile:
-    for line in infile:
-        entries = line.strip("\n").split("\t")
-        chrom_sizes[entries[0]] = int(entries[1])
-with open(os.path.join(RESOURCES, "reads3_scoring_dictionary.pickle"), mode = 'rb') as handle:
-    reads_dict = pickle.load(handle)
+#chrom_sizes = {}
+#with open(os.path.join(RESOURCES, "hg38.chrom.sizes"), mode = 'r') as infile:
+#    for line in infile:
+#        entries = line.strip("\n").split("\t")
+#        chrom_sizes[entries[0]] = int(entries[1])
+#with open(os.path.join(RESOURCES, "reads3_scoring_dictionary.pickle"), mode = 'rb') as handle:
+#    reads_dict = pickle.load(handle)
 
 # Input sequence
 seq = input("Enter your sequence: ").strip().upper()
@@ -1032,8 +1047,9 @@ for cid, (s, e) in enumerate(clusters, start=1):
         continue
     seg = profile[s:e+1]
     k = s + int(np.argmax(seg))
-    peak_rows.append(k)
-    rep_heights.append(float(profile[k]))
+    if (df2["PolyaID"].iloc[k] >= 0.75) & (k > 29) & (k < (total_length-29)):
+        peak_rows.append(k)
+        rep_heights.append(float(profile[k]))
 
 if len(peak_rows) == 0:
     print("cluster profile all 0")
@@ -1042,4 +1058,4 @@ else:
     out = out[["Position", "PolyaID", "PolyaStrength", "sequence", "cleavage_vector"]]
     out["PolyaID"] = out["PolyaID"].round(3)
     out["PolyaStrength"] = out["PolyaStrength"].round(3)
-    out.to_csv("polya_sites.example.txt", sep="\t", index=False)
+    out.to_csv(OUTDIR / "polya_sites.example.txt", sep="\t", index=False)

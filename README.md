@@ -44,24 +44,28 @@ AGAGCCGTGAAGGCCCAGGGGACCTGCGTGTCTTGGCTCCACGCCAGATGTGTTATTATTTATGTCTCTGAGAATGTCTG
 ```
 **Allowed characters:** `A C G T` only. Any other character will raise an error.
 
+**Note:** The first 30 nucleotides and last 30 nucleotides of your sequence can not be predicted as representative polya sites by this pipeline. Due to padding sequences with 'N' nucleotide to generate scanning positions, boundary nucleotides have predictions that can be unduly influenced by 'N' nucleotides.
+
 ## Outputs
 
-- **`results/cleavage_profile_explanation.pdf`**
-``` 
-Comprehensive predictions plot to identify individual Polya sites
+- **`results/cleavage_profile_explanation.pdf`** - Comprehensive predictions plot to identify individual Polya sites
 
-Axis1: PolyaID classification – Shows predicted polyadenylation probability per position (red = likely site, blue = unlikely).
-Axis2: Positive cleavage vectors – Distribution of cleavage site predictions across the sequence.
-Axis3: Normalized cleavage profile – Cleavage probability at each nucleotide across all scanning model predictions.
-Axis4: Representative cleavage site – Marks the most likely positions where cleavage actually occurs.
+![cleavage profile explanation pdf](https://github.com/zhejilab/PolyaModelsHuman/blob/main/results/cleavage_profile_explanation.example.pdf)
+
+``` 
+Axis1: PolyaID classification – Predicted polyadenylation probability per position (cutoff = 0.75)
+Axis2: Positive cleavage vectors – Distribution of cleavage site predictions.
+Axis3: Normalized cleavage profile – Cleavage probability across all scanning model predictions.
+Axis4: Representative cleavage site – Most likely polyadenylation sites.
 ```  
-- **`polya_sites.example.txt`** – Each identified representative polya site:  
-    - `Position`
-    - `PolyaID`
-    - `PolyaStrength`
-    - `sequence`
-    - `cleavage_vector`
-- See example file titled **`polya_sites.example.txt`** for what data is in each field
+- **`results/polya_sites.example.txt`** – Each identified representative polya site:  
+```
+Position: 121
+PolyaID: 0.99
+PolyaStrength: -2.03
+sequence: AGAGCCGTGAAGGCCCAGGGGACCTGCGTGTCTTGGCTCCACGCCAGATGTGTTATTATTTATGTCTCTGAGAATGTCTGGATCTCAGAGCCGAATTACAATAAAAACATCTTTAAACTTATTTCTACCTCATTTTGGGGTTGCCAGCTCACCTGATCATTTTTATGAACTGTCATGAACACTGATGACATTTTATGAGCCTTTTACATGGGACACTACAGAATACATTTGTCAGCGAGG
+cleavage_vector: [0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.015632,0.069378,0.390414,0.362004,0.132278,0.029009,0.001284,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000]
+```
 
 ## Jupyter Notebook Polya Prediction Workspace  
 
