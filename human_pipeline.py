@@ -1,4 +1,4 @@
-import os, csv, ast, subprocess
+import os, csv, ast, subprocess, argparse
 from pathlib import Path
 import pickle
 import pyfaidx
@@ -701,23 +701,23 @@ def cleavage_profile_explanation2(
     subset_idxs = idxs[subset_mask]
     subset_xs   = xs[subset_mask]
 
-    reads = np.asarray([reads_dict.get((region['strand'], region['chrom'], x), 0) for x in xs])
-    ax[0].bar(subset_xs, reads[subset_idxs], width=2, color='gray')
-    if ylims_3reads is not None:
-        ax[0].yaxis.set_major_locator(MultipleLocator(ylims_3reads[1]))
-        ax[0].set_ylim(ylims_3reads)
+    #reads = np.asarray([reads_dict.get((region['strand'], region['chrom'], x), 0) for x in xs])
+    #ax[0].bar(subset_xs, reads[subset_idxs], width=2, color='gray')
+    #if ylims_3reads is not None:
+    #    ax[0].yaxis.set_major_locator(MultipleLocator(ylims_3reads[1]))
+    #    ax[0].set_ylim(ylims_3reads)
 
     class_idx, class_clv_idx, cleavage_cols = [], [], []
     for i, x in zip(subset_idxs, subset_xs):
         if classprobs[i] > cutoff_class:
             class_idx.append(i)
             if cleavage_ctrs[i] > cutoff_clv:
-                p = ax[2].plot(np.arange(x-25, x+25, 1), cleavage_vecs[i],
+                p = ax[1].plot(np.arange(x-25, x+25, 1), cleavage_vecs[i],
                                linewidth=0.5, alpha=0.50, zorder=2)
                 cleavage_cols.append(p[-1].get_color())
                 class_clv_idx.append(i)
             else:
-                ax[2].plot(np.arange(x-25, x+25, 1), cleavage_vecs[i],
+                ax[1].plot(np.arange(x-25, x+25, 1), cleavage_vecs[i],
                            linewidth=0.25, alpha=0.05, color='gray', zorder=1)
 
     class_idx     = np.asarray(class_idx)
@@ -726,16 +726,16 @@ def cleavage_profile_explanation2(
 
     adj_classprobs = np.asarray(classprobs) - 0.75 #this is a hardcoded value to visualize predictions 
     colormat = np.where(adj_classprobs < 0, 'C0', 'C3')
-    ax[1].bar(subset_xs, adj_classprobs[subset_idxs], width=1, color=colormat[subset_idxs])
-    ax[1].axhline(y=0, color='black', linestyle='dashed', linewidth=0.5)
-    ax[1].set_ylim((-0.8, 0.3))
-    ax[1].set_yticks([-0.75, 0.25])
-    ax[1].set_yticklabels([0, 1.0])
-    ax[1].yaxis.set_minor_locator(MultipleLocator(0.5))
+    ax[0].bar(subset_xs, adj_classprobs[subset_idxs], width=1, color=colormat[subset_idxs])
+    ax[0].axhline(y=0, color='black', linestyle='dashed', linewidth=0.5)
+    ax[0].set_ylim((-0.8, 0.3))
+    ax[0].set_yticks([-0.75, 0.25])
+    ax[0].set_yticklabels([0, 1.0])
+    ax[0].yaxis.set_minor_locator(MultipleLocator(0.5))
 
-    ax[2].axhline(y=cutoff_clv, color='black', linestyle='dashed', linewidth=0.5)
+    ax[1].axhline(y=cutoff_clv, color='black', linestyle='dashed', linewidth=0.5)
     if class_clv_idx.size > 0:
-        ax[2].scatter(xs[class_clv_idx], np.asarray(cleavage_ctrs)[class_clv_idx],
+        ax[1].scatter(xs[class_clv_idx], np.asarray(cleavage_ctrs)[class_clv_idx],
                       color=cleavage_cols, s=2, zorder=3)
 
     if ylims_clv is None:
@@ -746,8 +746,8 @@ def cleavage_profile_explanation2(
         else:
             ymax = 0.1
         ylims_clv = (0, max(0.1, ymax))
-    ax[2].set_ylim(ylims_clv)
-    ax[2].yaxis.set_major_locator(MultipleLocator(ylims_clv[1]))
+    ax[1].set_ylim(ylims_clv)
+    ax[1].yaxis.set_major_locator(MultipleLocator(ylims_clv[1]))
 
     pred_dict = dict(zip(xs[class_clv_idx], np.asarray(cleavage_vecs)[class_clv_idx]))
     cleavage_profs = []
@@ -768,13 +768,13 @@ def cleavage_profile_explanation2(
     if normalize and cleavage_profs.sum() > 0:
         cleavage_profs = cleavage_profs / cleavage_profs.sum()
 
-    ax[3].plot(subset_xs, cleavage_profs, linewidth=0.5, color='gray')
+    ax[2].plot(subset_xs, cleavage_profs, linewidth=0.5, color='gray')
 
     if ylims_pro is None:
         ymax_p = float(np.max(cleavage_profs)) if cleavage_profs.size else 0.1
         ylims_pro = (0, max(0.1, ymax_p * 1.15))
-    ax[3].set_ylim(ylims_pro)
-    ax[3].yaxis.set_major_locator(MultipleLocator(ylims_pro[1]))
+    ax[2].set_ylim(ylims_pro)
+    ax[2].yaxis.set_major_locator(MultipleLocator(ylims_pro[1]))
 
     repr_xs, repr_vals = [], []
     prof_mask = (cleavage_profs > 0)
@@ -809,22 +809,22 @@ def cleavage_profile_explanation2(
                 repr_xs.append(subset_xs[seg_argmax_local])
                 repr_vals.append(cleavage_profs[seg_argmax_local])
 
-    ax[4].bar(repr_xs, repr_vals, width=1.2, color='gray')
+    ax[3].bar(repr_xs, repr_vals, width=1.2, color='gray')
     if ylims_pro is not None:
-        ax[4].yaxis.set_major_locator(MultipleLocator(ylims_pro[1]))
-        ax[4].set_ylim(ylims_pro)
+        ax[3].yaxis.set_major_locator(MultipleLocator(ylims_pro[1]))
+        ax[3].set_ylim(ylims_pro)
 
-    if visible_labels is not None:
-        ax[0].set_xlim(visible_region)
-        if visible_labels == 'relative':
-            ax[0].set_xticks(np.arange(visible_region[0], visible_region[1] + 1, 100))
-            ax[0].set_xticklabels(np.arange(
-                -1 * (visible_region[1] - visible_region[0]) / 2,
-                 1 + (visible_region[1] - visible_region[0]) / 2, 100, dtype=int))
-            ax[0].xaxis.set_minor_locator(MultipleLocator(25))
-        else:
-            ax[0].xaxis.set_major_locator(MultipleLocator(100))
-            ax[0].xaxis.set_minor_locator(MultipleLocator(25))
+    #if visible_labels is not None:
+    #    ax[0].set_xlim(visible_region)
+    #    if visible_labels == 'relative':
+    #        ax[0].set_xticks(np.arange(visible_region[0], visible_region[1] + 1, 100))
+    #        ax[0].set_xticklabels(np.arange(
+    #            -1 * (visible_region[1] - visible_region[0]) / 2,
+    #             1 + (visible_region[1] - visible_region[0]) / 2, 100, dtype=int))
+    #        ax[0].xaxis.set_minor_locator(MultipleLocator(25))
+    #    else:
+    #        ax[0].xaxis.set_major_locator(MultipleLocator(100))
+    #        ax[0].xaxis.set_minor_locator(MultipleLocator(25))
 
     for a in ax:
         a.spines['right'].set_visible(False)
@@ -846,7 +846,12 @@ def cleavage_profile_explanation2(
 #    reads_dict = pickle.load(handle)
 
 # Input sequence
-seq = input("Enter your sequence: ").strip().upper()
+#seq = input("Enter your sequence: ").strip().upper()
+parser = argparse.ArgumentParser(description = '---')
+parser.add_argument('-s', '--sequence', type=str, required=True, help="Sequence of interest")
+arg_prs = parser.parse_args()
+seq = arg_prs.sequence
+
 valid_bases = set("ACGTN")
 if not seq or any(base not in valid_bases for base in seq):
     raise ValueError("Invalid sequence")
@@ -966,23 +971,23 @@ reads_dict = {}   # no coverage → leave empty
 genome = None
 
 
-fig, axes = plt.subplots(5, 1, figsize=(8, 6), sharex=True,
-                         gridspec_kw={'height_ratios':[0.3,1,1,1,1]})
+fig, axes = plt.subplots(4, 1, figsize=(8, 6), sharex=True,
+                         gridspec_kw={'height_ratios':[1,1,1,1]})
 
 _ = cleavage_profile_explanation2(
     axes, region, inputs, reads_dict, genome,
     visible_region=(0, n), visible_labels='absolute',
-    cutoff_class=0.5, cutoff_clv=0.05, normalize=True,
+    cutoff_class=0.75, cutoff_clv=0.05, normalize=True,
     ylims_3reads=(0,10), ylims_clv=None, ylims_pro=None,
 )
 
-axes[1].set_ylabel("PolyaID\nclassification",       rotation=0, ha='right', va='center')
-axes[2].set_ylabel("Positive\ncleavage\nvectors",   rotation=0, ha='right', va='center')
-axes[3].set_ylabel("Normalized\ncleavage\nprofile", rotation=0, ha='right', va='center')
-axes[4].set_ylabel("Representative\ncleavage site", rotation=0, ha='right', va='center')
+axes[0].set_ylabel("PolyaID\nclassification",       rotation=0, ha='right', va='center')
+axes[1].set_ylabel("Positive\ncleavage\nvectors",   rotation=0, ha='right', va='center')
+axes[2].set_ylabel("Normalized\ncleavage\nprofile", rotation=0, ha='right', va='center')
+axes[3].set_ylabel("Representative\ncleavage site", rotation=0, ha='right', va='center')
 
 plt.tight_layout()
-plt.savefig(OUTDIR / "cleavage_profile_explanation.example.pdf", dpi=600, transparent=True)
+plt.savefig(OUTDIR / "cleavage_profile_explanation.human_example.svg", format="svg", dpi=600, transparent=True)
 plt.show()
 
 
@@ -994,7 +999,7 @@ df2 = pd.read_csv("sliding_windows_representatives.txt", sep="\t")
 vecs = np.vstack(df2["cleavage_vector"].apply(lambda s: np.fromstring(s, sep=",")))
 classp = df2["PolyaID"].to_numpy(float)
 centers = vecs[:, 25]
-cutoff_class = 0.5
+cutoff_class = 0.75
 cutoff_clv   = 0.05
 background   = 0.02
 normalize    = True
@@ -1058,4 +1063,4 @@ else:
     out = out[["Position", "PolyaID", "PolyaStrength", "sequence", "cleavage_vector"]]
     out["PolyaID"] = out["PolyaID"].round(3)
     out["PolyaStrength"] = out["PolyaStrength"].round(3)
-    out.to_csv(OUTDIR / "polya_sites.example.txt", sep="\t", index=False)
+    out.to_csv(OUTDIR / "polya_sites.human_example.txt", sep="\t", index=False)

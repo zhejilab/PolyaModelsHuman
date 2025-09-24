@@ -21,38 +21,30 @@ Contact *zhe.ji (at) northwestern.edu* with any questions.
 - Scipy == 1.13.1
 - Tqdm == 4.67.1
 
-Warning: We are still validating that these are the only required packages. 
+All versions were optimally selected by mamba and pip.
 
-All versions were optimally selected by pip.
-
-**`pipeline.py`** runs PolyaID & PolyaStrength on sliding windows around a **user-provided sequence** and saves results. It generates per-window PolyaID, cleavage vectors, PolyaStrength and a summary plot.
+**`human_pipeline.py`** runs PolyaID & PolyaStrength on sliding windows across a **user-provided sequence** and saves results. It generates per-nucleotide PolyaID predictions, cleavage vectors, and PolyaStrength predictions. Additionally, it procudes a full-window summary plot of all predictions.
 
 ## Usage
+The example command line below can also be found at results/human_example.command_line.txt
 
 ```bash
-python pipeline.py
+python human_pipeline.py -s AGAGCCGTGAAGGCCCAGGGGACCTGCGTGTCTTGGCTCCACGCCAGATGTGTTATTATTTATGTCTCTGAGAATGTCTGGATCTCAGAGCCGAATTACAATAAAAACATCTTTAAACTTATTTCTACCTCATTTTGGGGTTGCCAGCTCACCTGATCATTTTTATGAACTGTCATGAACACTGATGACATTTTATGAGCCTTTTACATGGGACACTACAGAATACATTTGTCAGCGAGG
 ```
-
-When prompted:
-
-```
-Enter your sequence:
-```
-
-**Put in the the sequence directly** (no quotes) and press Enter.       
+**Note: Put in the the sequence directly** (no quotes) and press Enter.       
 **Example sequence**: 
 ```
 AGAGCCGTGAAGGCCCAGGGGACCTGCGTGTCTTGGCTCCACGCCAGATGTGTTATTATTTATGTCTCTGAGAATGTCTGGATCTCAGAGCCGAATTACAATAAAAACATCTTTAAACTTATTTCTACCTCATTTTGGGGTTGCCAGCTCACCTGATCATTTTTATGAACTGTCATGAACACTGATGACATTTTATGAGCCTTTTACATGGGACACTACAGAATACATTTGTCAGCGAGG
 ```
 **Allowed characters:** `A C G T` only. Any other character will raise an error.
 
-**Note:** The first 30 nucleotides and last 30 nucleotides of your sequence can not be predicted as representative polya sites by this pipeline. Due to padding sequences with 'N' nucleotide to generate scanning positions, boundary nucleotides have predictions that can be unduly influenced by 'N' nucleotides.
+**Note:** The first 30 nucleotides and last 30 nucleotides of your sequence can not be predicted as representative polya sites by this pipeline. Due to padding sequences with 'N' nucleotides to generate scanning windows, boundary nucleotides have predictions that can be unduly influenced by 'N' nucleotides.
 
 ## Outputs
 
-- **`results/cleavage_profile_explanation.pdf`** - Comprehensive predictions plot to identify individual Polya sites
+- **`results/cleavage_profile_explanation.human_example.svg`** - Comprehensive predictions plot to identify individual Polya sites
 
-[![polya_cleavage_profiles](/results/cleavage_profile_explanation.example.pdf)]
+[![polya_cleavage_profiles](/results/cleavage_profile_explanation.human_example.svg)]
 
 ``` 
 Axis1: PolyaID classification – Predicted polyadenylation probability per position (cutoff = 0.75)
@@ -60,7 +52,7 @@ Axis2: Positive cleavage vectors – Distribution of cleavage site predictions.
 Axis3: Normalized cleavage profile – Cleavage probability across all scanning model predictions.
 Axis4: Representative cleavage site – Most likely polyadenylation sites.
 ```  
-- **`results/polya_sites.example.txt`** – Each identified representative polya site:  
+- **`results/polya_sites.human_example.txt`** – Each identified representative polya site:  
 ```
 Position: 121
 PolyaID: 0.99
