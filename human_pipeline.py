@@ -985,6 +985,7 @@ axes[0].set_ylabel("PolyaID\nclassification",       rotation=0, ha='right', va='
 axes[1].set_ylabel("Positive\ncleavage\nvectors",   rotation=0, ha='right', va='center')
 axes[2].set_ylabel("Normalized\ncleavage\nprofile", rotation=0, ha='right', va='center')
 axes[3].set_ylabel("Representative\ncleavage site", rotation=0, ha='right', va='center')
+axes[3].set_xlabel("Sequence position", rotation=0, ha='center', va='center')
 
 plt.tight_layout()
 plt.savefig(OUTDIR / "cleavage_profile_explanation.human_example.svg", format="svg", dpi=600, transparent=True)
