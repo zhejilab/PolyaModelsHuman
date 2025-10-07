@@ -13,7 +13,7 @@ Contact *zhe.ji (at) northwestern.edu* with any questions.
 mamba env create -f environment.yml 
 ```
 
-All versions were optimally selected by mamba and pip.
+This will produce a mamba environment named "polya_github" that can run the human_pipeline example shown in the directly subsequent steps of this ReadMe. All package versions were optimally selected by mamba and pip.
 
 **`human_pipeline.py`** runs PolyaID & PolyaStrength on sliding windows across a **user-provided sequence** and saves results. It generates per-nucleotide PolyaID predictions, cleavage vectors, and PolyaStrength predictions. Additionally, it procudes a full-window summary plot of all predictions.
 
