@@ -7,19 +7,11 @@ Contact *zhe.ji (at) northwestern.edu* with any questions.
 
 ## Making New Predictions
 
-### Running PolyaModels requires the following packages be installed
+### Running PolyaModels requires specific packages to be installed. The dependencies all exist in the "environment.yml" file. Run this command to create a compatible mamba environment:
 
-- Python == 3.9.6
-- Tensorflow == 2.19.0
-- Keras == 3.10.0
-- NumPy == 2.0.2
-- Pandas == 2.2.3
-- Pyfaidx == 0.8.1.4
-- Isolearn == 0.2.1
-- Matplotlib == 3.9.4
-- Ipykernel == 6.29.5
-- Scipy == 1.13.1
-- Tqdm == 4.67.1
+```bash
+mamba env create -f environment.yml 
+```
 
 All versions were optimally selected by mamba and pip.
 
