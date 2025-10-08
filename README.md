@@ -24,6 +24,7 @@ The example command line below can also be found at results/human_example.comman
 python human_pipeline.py -s AGAGCCGTGAAGGCCCAGGGGACCTGCGTGTCTTGGCTCCACGCCAGATGTGTTATTATTTATGTCTCTGAGAATGTCTGGATCTCAGAGCCGAATTACAATAAAAACATCTTTAAACTTATTTCTACCTCATTTTGGGGTTGCCAGCTCACCTGATCATTTTTATGAACTGTCATGAACACTGATGACATTTTATGAGCCTTTTACATGGGACACTACAGAATACATTTGTCAGCGAGG
 ```
 **Note: Put in the the sequence directly** (no quotes) and press Enter.
+
 **Caution: the 2 published h5 model files should be manually downloaded.** Cloning the repository and zipping the files has been shown to corrupt the trained models.
 
 **Example sequence**: 
