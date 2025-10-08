@@ -7,7 +7,7 @@ Contact *zhe.ji (at) northwestern.edu* with any questions.
 
 ## Making New Predictions
 
-### Running PolyaModels requires specific packages to be installed. The dependencies all exist in the "environment.yml" file. Run this command to create a compatible mamba environment:
+Running PolyaModels requires specific packages to be installed. The dependencies all exist in the "environment.yml" file. Run this command to create a compatible mamba environment:
 
 ```bash
 mamba env create -f environment.yml 
@@ -23,7 +23,9 @@ The example command line below can also be found at results/human_example.comman
 ```bash
 python human_pipeline.py -s AGAGCCGTGAAGGCCCAGGGGACCTGCGTGTCTTGGCTCCACGCCAGATGTGTTATTATTTATGTCTCTGAGAATGTCTGGATCTCAGAGCCGAATTACAATAAAAACATCTTTAAACTTATTTCTACCTCATTTTGGGGTTGCCAGCTCACCTGATCATTTTTATGAACTGTCATGAACACTGATGACATTTTATGAGCCTTTTACATGGGACACTACAGAATACATTTGTCAGCGAGG
 ```
-**Note: Put in the the sequence directly** (no quotes) and press Enter.       
+**Note: Put in the the sequence directly** (no quotes) and press Enter.
+**Caution: the 2 published h5 model files should be manually downloaded.** Cloning the repository and zipping the files has been shown to corrupt the trained models.
+
 **Example sequence**: 
 ```
 AGAGCCGTGAAGGCCCAGGGGACCTGCGTGTCTTGGCTCCACGCCAGATGTGTTATTATTTATGTCTCTGAGAATGTCTGGATCTCAGAGCCGAATTACAATAAAAACATCTTTAAACTTATTTCTACCTCATTTTGGGGTTGCCAGCTCACCTGATCATTTTTATGAACTGTCATGAACACTGATGACATTTTATGAGCCTTTTACATGGGACACTACAGAATACATTTGTCAGCGAGG
@@ -52,15 +54,20 @@ PolyaStrength: -2.03
 sequence: AGAGCCGTGAAGGCCCAGGGGACCTGCGTGTCTTGGCTCCACGCCAGATGTGTTATTATTTATGTCTCTGAGAATGTCTGGATCTCAGAGCCGAATTACAATAAAAACATCTTTAAACTTATTTCTACCTCATTTTGGGGTTGCCAGCTCACCTGATCATTTTTATGAACTGTCATGAACACTGATGACATTTTATGAGCCTTTTACATGGGACACTACAGAATACATTTGTCAGCGAGG
 cleavage_vector: [0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.015632,0.069378,0.390414,0.362004,0.132278,0.029009,0.001284,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000000]
 ```
+### Customizing outputs
+If you desire to change how outputs are presented or easily use PolyaID and PolyaStrength predictions for a specific purpose, you can edit all functions in the workflow described above in a jupyter notebook
+-**`human_pipeline.input_is_sequence.ipynb`** - Jupyter notebook that mimics **human_pipeline.py** exactly.
 
-## Jupyter Notebook Polya Prediction Workspace  
+
+## Jupyter Notebook Polya Prediction Workspace
+
+In this ReadMe, we have outlined the most common use case for scanning polya model predictions - where a genetic sequence of interest is analyzed for polyadenylation. However, the model predictions from the uploaded models can also commonly be used to investigate polyadenylation across a known genomic region of interest. We have included a jupyter notebook, **polyA_prediction_pipeline.ipynb**, with some starter code for visualizing model predictions across known sequences and genomic regions of interest.  
 
 ### Usage directions for current pipeline - jupyter notebook
 PolyaID and PolyaStrength can be used to make new predictions from new sequences, or a file containing genomic regions of interest. Due to biological relevancy and model interpertability, we do not support analysis of sequences shorter than 60 nucleotides.
 
-```
-If you want to customize output files or output plots, the functions used in pipeline.py are all laid out in an easy to interpret fashion across different jupyter notebook cells.
-```
+If you want to customize output files or output plots, the functions used in **human_pipeline.py** - and additional functions - are all laid out in an easy to interpret fashion across different jupyter notebook cells.
+
 
 #### Important Notice
 Due to file sizes, the genome FASTA files could not be added to this repo. If you wish to use these files for predictions please name them as they appear in the jupyter notebook workflow in the cell under the header 'Data'. The missing files are:
